@@ -1,0 +1,39 @@
+Program:
+  'resource ' resource=ID '{'
+    commands*=Command
+  '}'
+;
+
+Command:
+  ContextCommand | CallbackCommand | MethodCode
+;
+
+ContextCommand:
+  'context' description=STRING '{'
+    body+=Command
+  '}'
+;
+
+CallbackCommand:
+  callback='before'|'after' '{'
+    body+=Code
+  '}'
+;
+
+BlockCode:
+  ContextCommand | CallbackCommand | Code
+;
+
+Method:
+  'get'|'post'|'put'|'delete'
+;
+
+MethodCode:
+  method=Method '{'
+    body+=Code
+  '}'
+;
+
+Code:
+  /[^{}](.*)?$/
+;

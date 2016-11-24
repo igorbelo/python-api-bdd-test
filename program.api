@@ -1,0 +1,25 @@
+resource Mission {
+  context "when theres an object" {
+    before {
+      pass
+    }
+
+    get {
+      pass
+    }
+
+    post {
+      pass
+    }
+
+    after {
+      pass
+    }
+
+    context "mamamia" {
+      get {
+        pass
+      }
+    }
+  }
+}
