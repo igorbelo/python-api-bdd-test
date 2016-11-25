@@ -16,7 +16,7 @@ resource Mission {
       pass
     }
 
-    context "mamamia" {
+    context "inner context" {
       get {
         pass
       }

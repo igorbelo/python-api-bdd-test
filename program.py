@@ -1,9 +1,11 @@
 from textx.metamodel import metamodel_from_file
 
+def exec_code(body):
+    exec("\n".join(body))
+
 class Context:
     def __init__(self, *args, **kwargs):
         self.description = kwargs['description']
-        self.resource = kwargs['resource']
         if 'before' in kwargs:
             self.before = kwargs['before']
         else:
@@ -17,77 +19,80 @@ class Context:
         else:
             self.tests = []
 
-class Response:
+    def run(self):
+        for test in self.tests:
+            for before in self.before:
+                exec_code(before.body)
+
+            test.run()
+
+            for after in self.after:
+                exec_code(after.body)
+
+class Test:
+    def __init__(self, context, test):
+        self.context = context
+        self.test = test
+
+    def prepare(self):
+        pass
+
+    def run(self):
+        self.prepare()
+        exec_code(self.test.body)
+
+class Flow:
     def __init__(self, *args, **kwargs):
-        self.status_code = 200
+        self.contexts = []
 
-def build_flow(command, resource, contexts = []):
-    if type(command).__name__ == 'ContextCommand':
-        context = Context(
-            description = command.description,
-            resource = resource
-        )
-        contexts.append(context)
-        for body in command.body:
-            build_flow(body, resource, contexts)
-    else:
-        if not contexts:
+    def build(self, command):
+        if type(command).__name__ == 'ContextCommand':
             context = Context(
-                description = "MainContent",
-                resource = resource
+                description = command.description
             )
+            self.contexts.append(context)
+            for body in command.body:
+                self.build(body)
         else:
-            context = contexts[-1]
-
-        if len(contexts) > 1:
-            last_context = contexts[-2]
-
-            if len(context.before) == 0:
-                for last_before in last_context.before:
-                    context.before.append(last_before)
-
-            if len(context.after) == 0:
-                for last_after in last_context.after:
-                    context.after.append(last_after)
-
-        if type(command).__name__ == 'CallbackCommand':
-            if command.callback == 'before':
-                context.before.append(command)
+            if not self.contexts:
+                context = Context(
+                    description = "MainContext"
+                )
             else:
-                context.after.append(command)
-        else:
-            context.tests.append(command)
+                context = self.contexts[-1]
 
-    return contexts
+            if len(self.contexts) > 1:
+                last_context = self.contexts[-2]
 
-def prepare_test_execution(test, context):
-    response = Response()
+                if len(context.before) == 0:
+                    for last_before in last_context.before:
+                        context.before.append(last_before)
 
-def exec_code(body):
-    exec("\n".join(body))
+                if len(context.after) == 0:
+                    for last_after in last_context.after:
+                        context.after.append(last_after)
 
-def exec_test(test, context):
-    prepare_test_execution(test, context)
-    exec_code(test.body)
+            if type(command).__name__ == 'CallbackCommand':
+                if command.callback == 'before':
+                    context.before.append(command)
+                else:
+                    context.after.append(command)
+            else:
+                test = Test(
+                    context = context,
+                    test = command
+                )
+                context.tests.append(test)
 
-def exec_context(context):
-    for test in context.tests:
-        for before in context.before:
-            exec_code(before.body)
+        return self.contexts
 
-        exec_test(test, context)
-
-        for after in context.after:
-            exec_code(after.body)
-
-def exec_flow(flow):
-    for context in flow:
-        exec_context(context)
-
+    def run(self):
+        [context.run() for context in self.contexts]
 
 mm = metamodel_from_file('grammar.tx')
 model = mm.model_from_file('program.api')
 
 for command in model.commands:
-    flow = build_flow(command, model.resource)
-    exec_flow(flow)
+    flow = Flow()
+    flow.build(command)
+    flow.run()
