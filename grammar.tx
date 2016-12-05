@@ -1,11 +1,15 @@
 Program:
+  Resource
+;
+
+Resource:
   'resource ' resource=ID '{'
     commands*=Command
   '}'
 ;
 
 Command:
-  ContextCommand | CallbackCommand | MethodCode
+  ContextCommand | CallbackCommand | TestCode
 ;
 
 ContextCommand:
@@ -24,12 +28,8 @@ BlockCode:
   ContextCommand | CallbackCommand | Code
 ;
 
-Method:
-  'get'|'post'|'put'|'delete'
-;
-
-MethodCode:
-  method=Method '{'
+TestCode:
+  'it' description=STRING '{'
     body+=Code
   '}'
 ;

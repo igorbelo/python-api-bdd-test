@@ -1,7 +1,19 @@
 from textx.metamodel import metamodel_from_file
+from test_wrapper import TestWrapper
+import unittest
+from random import randint
+import re
 
-def exec_code(body):
-    exec("\n".join(body))
+_punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
+
+def slugify(text, delim=u'_'):
+    result = []
+    for word in _punct_re.split(text.lower()):
+        result.extend(word.split())
+    return unicode(delim.join(result))
+
+def exec_code(body, self = None):
+    exec "\n".join(body) in globals(), locals()
 
 class Context:
     def __init__(self, *args, **kwargs):
@@ -21,25 +33,33 @@ class Context:
 
     def run(self):
         for test in self.tests:
-            for before in self.before:
-                exec_code(before.body)
-
-            test.run()
-
-            for after in self.after:
-                exec_code(after.body)
+            test.run(self.before, self.after)
 
 class Test:
     def __init__(self, context, test):
         self.context = context
         self.test = test
 
-    def prepare(self):
-        pass
+    def run(self, before_callbacks, after_callbacks):
+        body = self.test.body
 
-    def run(self):
-        self.prepare()
-        exec_code(self.test.body)
+        def test_function(self):
+            for before in before_callbacks:
+                exec_code(before.body)
+
+            exec_code(body, self)
+
+            for after in after_callbacks:
+                exec_code(after.body)
+
+        setattr(
+            TestWrapper,
+            slugify(
+                "test_%s_%s" %
+                (self.context.description, self.test.description)
+            ),
+            test_function
+        )
 
 class Flow:
     def __init__(self, *args, **kwargs):
@@ -96,3 +116,6 @@ for command in model.commands:
     flow = Flow()
     flow.build(command)
     flow.run()
+
+if __name__ == '__main__':
+    unittest.main()

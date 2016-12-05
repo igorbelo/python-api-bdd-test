@@ -1,25 +1,15 @@
 resource Mission {
   context "when theres an object" {
     before {
-      pass
+      print "antes"
     }
 
-    get {
-      pass
-    }
-
-    post {
-      pass
+    it "returns 200" {
+      self.assertEqual(1, 2)
     }
 
     after {
-      pass
-    }
-
-    context "inner context" {
-      get {
-        pass
-      }
+      print "depois"
     }
   }
 }
