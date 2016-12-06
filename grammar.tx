@@ -1,5 +1,13 @@
 Program:
-  Resource
+  resource=Resource | header_codes*=FirstCode
+;
+
+FirstCode:
+  Resource | Code
+;
+
+Ae:
+  resource=Resource | code=Code
 ;
 
 Resource:

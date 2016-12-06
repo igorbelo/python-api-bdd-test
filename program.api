@@ -1,3 +1,5 @@
+import json
+
 resource Mission {
   context "when theres an object" {
     before {
@@ -5,7 +7,7 @@ resource Mission {
     }
 
     it "returns 200" {
-      self.assertEqual(1, 2)
+      self.assertEqual(1, 1)
     }
 
     after {
