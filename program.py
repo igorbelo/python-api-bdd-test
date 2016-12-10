@@ -1,8 +1,11 @@
 from textx.metamodel import metamodel_from_file
-from test_wrapper import TestWrapper
 import unittest
 from random import randint
 import re
+import unittest
+
+class TestWrapper(unittest.TestCase):
+    pass
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
 
@@ -12,7 +15,10 @@ def slugify(text, delim=u'_'):
         result.extend(word.split())
     return unicode(delim.join(result))
 
-def exec_code(body, self = None):
+def exec_code(body, code_before_resource = None, self = None):
+    if code_before_resource:
+        exec "\n".join(code_before_resource) in globals(), locals()
+
     exec "\n".join(body) in globals(), locals()
 
 class Context:
@@ -43,14 +49,15 @@ class Test:
 
     def run(self, before_callbacks, after_callbacks):
         body = self.test.body
+        imports = self.code_before_resource
 
         def test_function(inner_self):
-            exec_code(self.code_before_resource, inner_self)
-
             for before in before_callbacks:
                 exec_code(before.body)
 
-            exec_code(body, inner_self)
+            exec_code(body,
+                      imports,
+                      inner_self)
 
             for after in after_callbacks:
                 exec_code(after.body)

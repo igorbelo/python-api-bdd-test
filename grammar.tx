@@ -6,10 +6,6 @@ FirstCode:
   Resource | Code
 ;
 
-Ae:
-  resource=Resource | code=Code
-;
-
 Resource:
   'resource ' resource=ID '{'
     commands*=Command
