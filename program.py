@@ -17,13 +17,17 @@ def slugify(text, delim=u'_'):
 
 def exec_code(body, code_before_resource = None, self = None):
     if code_before_resource:
-        exec "\n".join(code_before_resource) in globals(), locals()
+        exec"\n".join(code_before_resource) in globals(), locals()
 
     exec "\n".join(body) in globals(), locals()
 
 class Context:
+    parent = None
+
     def __init__(self, *args, **kwargs):
         self.description = kwargs['description']
+        if 'parent' in kwargs:
+            self.parent = kwargs['parent']
         if 'before' in kwargs:
             self.before = kwargs['before']
         else:
@@ -52,10 +56,14 @@ class Test:
         imports = self.code_before_resource
 
         def test_function(inner_self):
+            befores = []
             for before in before_callbacks:
-                exec_code(before.body)
+                befores.append(before.body)
 
-            exec_code(body,
+            code = befores + [body]
+            all_code = [item for sublist in code for item in sublist]
+
+            exec_code(all_code,
                       imports,
                       inner_self)
 
@@ -76,14 +84,15 @@ class Flow:
         self.contexts = []
         self.code_before_resource = kwargs['code_before_resource']
 
-    def build(self, command):
+    def build(self, command, parent_context=None):
         if type(command).__name__ == 'ContextCommand':
             context = Context(
-                description = command.description
+                description = command.description,
+                parent = parent_context
             )
             self.contexts.append(context)
             for body in command.body:
-                self.build(body)
+                self.build(body, context)
         else:
             if not self.contexts:
                 context = Context(
@@ -92,16 +101,17 @@ class Flow:
             else:
                 context = self.contexts[-1]
 
-            if len(self.contexts) > 1:
-                last_context = self.contexts[-2]
+            parent = context.parent
+            while parent:
+                if parent.before:
+                    for before in parent.before:
+                        context.before.insert(0, before)
 
-                if len(context.before) == 0:
-                    for last_before in last_context.before:
-                        context.before.append(last_before)
+                if parent.after:
+                    for after in parent.after:
+                        context.after.insert(0, after)
 
-                if len(context.after) == 0:
-                    for last_after in last_context.after:
-                        context.after.append(last_after)
+                parent = parent.parent
 
             if type(command).__name__ == 'CallbackCommand':
                 if command.callback == 'before':

@@ -1,11 +1,13 @@
 from models.calculator import Calculator
 
-resource Calculadora {
+resource Calculator {
   context "usuario digita 25" {
+    before {
+      c = Calculator()
+      c.type_number(25)
+    }
     context "usuario digita 25" {
       before {
-          c = Calculator()
-          c.type_number(25)
           c.type_number(25)
       }
 
