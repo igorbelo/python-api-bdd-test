@@ -1,15 +1,101 @@
-resource Mission {
-  context "when theres an object" {
-    before {
-      print "antes"
-    }
+from models.calculator import Calculator
 
-    it "returns 200" {
-      self.assertEqual(1, 1)
-    }
+resource Calculadora {
+  context "usuario digita 25" {
+    context "usuario digita 25" {
+      before {
+          c = Calculator()
+          c.type_number(25)
+          c.type_number(25)
+      }
 
-    after {
-      print "depois"
+      context "usuario clica em adicionar" {
+        it "deve retornar 50" {
+          self.assertEqual(
+            c.add(),
+            50
+          )
+        }
+
+        context "usuario digita 100" {
+          context "usuario clica em adicionar" {
+            it "deve retornar 150" {
+               c.add()
+               c.type_number(100)
+               self.assertEqual(
+                 c.add(),
+                 150
+               )
+            }
+          }
+        }
+      }
+
+      context "usuario clica em multiplicar" {
+        it "deve retornar 625" {
+          self.assertEqual(
+            c.multiply(),
+            625
+          )
+        }
+
+        context "usuario digita 10" {
+          context "usuario clica em multiplicar" {
+            it "deve retornar 6250" {
+               c.multiply()
+               c.type_number(10)
+               self.assertEqual(
+                 c.multiply(),
+                 6250
+               )
+            }
+          }
+        }
+      }
+
+      context "usuario clica em diminuir" {
+        it "deve retornar 0" {
+          self.assertEqual(
+            c.subtract(),
+            0
+          )
+        }
+
+        context "usuario digita 14" {
+          context "usuario clica em diminuir" {
+            it "deve retornar -14" {
+               c.subtract()
+               c.type_number(14)
+               self.assertEqual(
+                 c.subtract(),
+                 -14
+               )
+            }
+          }
+        }
+      }
+
+      context "usuario clica em dividir" {
+        it "deve retornar 1" {
+          self.assertEqual(
+            c.divide(),
+            1
+          )
+        }
+
+        context "usuario digita 0.2" {
+          context "usuario clica em dividir" {
+            it "deve retornar 5.0" {
+               c.divide()
+               c.type_number(0.2)
+               self.assertEqual(
+                 c.divide(),
+                 5.0
+               )
+            }
+          }
+        }
+      }
     }
   }
 }
