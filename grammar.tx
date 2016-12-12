@@ -1,8 +1,8 @@
 Program:
-  resource=Resource | header_codes*=FirstCode
+  resource=Resource | header_codes*=HeaderCode
 ;
 
-FirstCode:
+HeaderCode:
   Resource | Code
 ;
 

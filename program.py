@@ -42,7 +42,18 @@ class Context:
             self.tests = []
 
     def run(self):
+        level = 0
+        parent = self.parent
+        while parent:
+            level += 1
+            parent = parent.parent
+
+        for i in range(level): print "   ",
+        print self.description
+
         for test in self.tests:
+            for i in range(level+1): print "   ",
+            print test.test.description
             test.run(self.before, self.after)
 
 class Test:
